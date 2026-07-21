@@ -25,10 +25,32 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
+// Build allowed origins list from environment
+// FRONTEND_URL should be set to your Vercel deployment URL in Render dashboard
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [])
+];
+
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, Postman, server-to-server)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS policy: origin ${origin} not allowed`));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
 // Configure Socket.io
 const io = new Server(server, {
   cors: {
-    origin: '*', // For development flexibility
+    origin: allowedOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE']
   }
 });
@@ -42,7 +64,7 @@ connectDB();
 app.use(helmet({
   contentSecurityPolicy: false // Allow inline scripts/styles for development dashboards
 }));
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // API Base Rate Limiting
@@ -83,5 +105,7 @@ server.listen(PORT, () => {
   console.log(`=================================================`);
   console.log(`  EIMP Backend Server running on port ${PORT}`);
   console.log(`  Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`  Allowed CORS origins: ${allowedOrigins.join(', ')}`);
   console.log(`=================================================`);
 });
+

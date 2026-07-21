@@ -15,10 +15,14 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    // Connect to the Express backend port 5000
-    const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL 
-      ? process.env.NEXT_PUBLIC_API_URL.replace('/api', '') 
-      : 'http://localhost:5000';
+    // Resolve backend socket URL in priority order:
+    // 1. Dedicated NEXT_PUBLIC_SOCKET_URL (most explicit)
+    // 2. Strip /api from NEXT_PUBLIC_API_URL  
+    // 3. Fallback to localhost for local development
+    const BACKEND_URL = process.env.NEXT_PUBLIC_SOCKET_URL
+      || (process.env.NEXT_PUBLIC_API_URL
+        ? process.env.NEXT_PUBLIC_API_URL.replace('/api', '')
+        : 'http://localhost:5000');
 
     console.log('[Socket Service] Connecting to Socket server:', BACKEND_URL);
     const newSocket = io(BACKEND_URL, {

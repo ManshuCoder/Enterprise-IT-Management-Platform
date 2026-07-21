@@ -18,3 +18,5 @@ services:
         generateValue: true
       - key: JWT_REFRESH_SECRET
         generateValue: true
+      - key: FRONTEND_URL
+        sync: false # Set this to your Vercel deployment URL e.g. https://your-app.vercel.app
