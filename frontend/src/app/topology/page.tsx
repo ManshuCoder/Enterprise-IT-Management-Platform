@@ -16,7 +16,8 @@ import {
   Phone,
   Camera,
   Wifi,
-  Power
+  Power,
+  ShieldAlert
 } from 'lucide-react';
 
 interface Device {
