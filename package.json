@@ -1,0 +1,9 @@
+{
+  "name": "eimp-monorepo-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "npm install --prefix backend && npm run build --prefix backend",
+    "start": "npm start --prefix backend"
+  }
+}

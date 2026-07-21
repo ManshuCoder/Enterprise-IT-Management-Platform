@@ -5,7 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "node \"node_modules/tsx/dist/cli.mjs\" watch src/server.ts",
-    "build": "rimraf dist && tsc",
+    "build": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\" && node node_modules/typescript/bin/tsc",
     "start": "node dist/server.js",
     "seed": "node \"node_modules/tsx/dist/cli.mjs\" src/config/seed.ts"
   },
