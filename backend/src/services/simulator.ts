@@ -67,7 +67,7 @@ export const initSimulator = (io: Server) => {
   // 2. Firewall traffic simulator (runs every 3 seconds)
   setInterval(async () => {
     try {
-      const rules = await FirewallRule.find({ enabled: true });
+      const rules = (await FirewallRule.find({ enabled: true })) as any[];
       if (rules.length === 0) return;
 
       // Select a random active rule to process a packet hit

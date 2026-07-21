@@ -43,23 +43,23 @@ export const getSecuritySummary = async (req: AuthenticatedRequest, res: Respons
     const alerts = await SecurityAlert.find();
     
     const totalAlerts = alerts.length;
-    const activeAlerts = alerts.filter(a => a.status === 'Active').length;
-    const investigatingAlerts = alerts.filter(a => a.status === 'Investigating').length;
-    const mitigatedAlerts = alerts.filter(a => a.status === 'Mitigated').length;
+    const activeAlerts = alerts.filter((a: any) => a.status === 'Active').length;
+    const investigatingAlerts = alerts.filter((a: any) => a.status === 'Investigating').length;
+    const mitigatedAlerts = alerts.filter((a: any) => a.status === 'Mitigated').length;
 
     // Highest threat score among active alerts, or 0 if none
     const activeAlertScores = alerts
-      .filter(a => a.status !== 'Mitigated')
-      .map(a => a.threatScore);
+      .filter((a: any) => a.status !== 'Mitigated')
+      .map((a: any) => a.threatScore);
     const overallThreatScore = activeAlertScores.length > 0 ? Math.max(...activeAlertScores) : 10; // baseline 10/100
 
     const countsByType = {
-      'Brute Force': alerts.filter(a => a.type === 'Brute Force').length,
-      'Malware Alert': alerts.filter(a => a.type === 'Malware Alert').length,
-      'Intrusion Detection': alerts.filter(a => a.type === 'Intrusion Detection').length,
-      'CVE Alert': alerts.filter(a => a.type === 'CVE Alert').length,
-      'Failed Logins': alerts.filter(a => a.type === 'Failed Logins').length,
-      'Unauthorized Scan': alerts.filter(a => a.type === 'Unauthorized Scan').length,
+      'Brute Force': alerts.filter((a: any) => a.type === 'Brute Force').length,
+      'Malware Alert': alerts.filter((a: any) => a.type === 'Malware Alert').length,
+      'Intrusion Detection': alerts.filter((a: any) => a.type === 'Intrusion Detection').length,
+      'CVE Alert': alerts.filter((a: any) => a.type === 'CVE Alert').length,
+      'Failed Logins': alerts.filter((a: any) => a.type === 'Failed Logins').length,
+      'Unauthorized Scan': alerts.filter((a: any) => a.type === 'Unauthorized Scan').length,
     };
 
     return res.json({
