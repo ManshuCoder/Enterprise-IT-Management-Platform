@@ -25,21 +25,28 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// Build allowed origins list from environment
-// FRONTEND_URL should be set to your Vercel deployment URL in Render dashboard
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-  ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [])
-];
+// Allowed origin patterns:
+// - localhost for local development
+// - Any *.vercel.app subdomain (covers all Vercel production + preview deployments)
+// - Explicit FRONTEND_URL env var for custom domains
+const VERCEL_PATTERN = /^https:\/\/[a-z0-9-]+\.vercel\.app$/;
 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl, Postman, server-to-server)
+    // Allow requests with no origin (Postman, curl, server-to-server, mobile apps)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
+
+    const isLocalhost = origin === 'http://localhost:3000' || origin === 'http://localhost:3001';
+    const isVercel = VERCEL_PATTERN.test(origin);
+    const isCustomFrontend = process.env.FRONTEND_URL
+      ? origin === process.env.FRONTEND_URL
+      : false;
+
+    if (isLocalhost || isVercel || isCustomFrontend) {
       return callback(null, true);
     }
+
+    console.warn(`[CORS] Blocked origin: ${origin}`);
     return callback(new Error(`CORS policy: origin ${origin} not allowed`));
   },
   credentials: true,
@@ -47,13 +54,21 @@ const corsOptions: cors.CorsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization']
 };
 
-// Configure Socket.io
+// Configure Socket.io with the same origin policy
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const isLocalhost = origin === 'http://localhost:3000' || origin === 'http://localhost:3001';
+      const isVercel = VERCEL_PATTERN.test(origin);
+      const isCustomFrontend = process.env.FRONTEND_URL ? origin === process.env.FRONTEND_URL : false;
+      if (isLocalhost || isVercel || isCustomFrontend) return callback(null, true);
+      return callback(new Error(`CORS policy: socket origin ${origin} not allowed`));
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE']
   }
 });
+
 
 const PORT = process.env.PORT || 5000;
 
@@ -105,7 +120,7 @@ server.listen(PORT, () => {
   console.log(`=================================================`);
   console.log(`  EIMP Backend Server running on port ${PORT}`);
   console.log(`  Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`  Allowed CORS origins: ${allowedOrigins.join(', ')}`);
+  console.log(`  CORS: localhost, *.vercel.app${process.env.FRONTEND_URL ? `, ${process.env.FRONTEND_URL}` : ''}`);
   console.log(`=================================================`);
 });
 

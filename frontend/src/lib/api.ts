@@ -1,4 +1,8 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+// Normalize BASE_URL: ensure it always ends with /api
+// Handles both: NEXT_PUBLIC_API_URL=https://host.onrender.com
+//           and: NEXT_PUBLIC_API_URL=https://host.onrender.com/api
+const _rawUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const BASE_URL = _rawUrl.endsWith('/api') ? _rawUrl : `${_rawUrl.replace(/\/$/, '')}/api`;
 
 const getHeaders = () => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('eimp_access_token') : null;
